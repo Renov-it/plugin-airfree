@@ -1,0 +1,16 @@
+{
+  "id": "airfree",
+  "name": "Airfree - Respirez ! C'est Open-Source !",
+  "description": "Plugin de pilotage 100 % local des systèmes de régulation CVC (API locale port 3000 /api/v1/hvac) avec interface graphique Desktop & Mobile.",
+  "licence": "GPL-3.0",
+  "author": "Renov-it",
+  "require": "4.2",
+  "category": "heating",
+  "hasDependency": false,
+  "hasOwnDeamon": false,
+  "maxDependancyInstallTime": 0,
+  "documentation": "https://github.com/Renov-it/plugin-airfree/blob/develop/docs/fr_FR/index.md",
+  "changelog": "https://github.com/Renov-it/plugin-airfree/commits/develop",
+  "display": "panel",
+  "mobile": "airfree"
+}

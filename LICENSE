@@ -1,0 +1,25 @@
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+
+Copyright (C) 2026 Airfree Contributors
+
+Ce programme (Airfree - Plugin Jeedom & Interface Web/Mobile pour API Locale CVC) est un logiciel libre ;
+vous pouvez le redistribuer et/ou le modifier conformément aux dispositions de la Licence Publique Générale GNU,
+telle que publiée par la Free Software Foundation ; version 3 de la licence, ou encore (à votre choix) toute version ultérieure.
+
+---
+ATTRIBUTIONS & COMPOSANTS TIERS OPEN-SOURCE :
+
+1. Pictogrammes SVG (Interface Web & Mobile) :
+   - Formes géométriques vectorielles originales (<svg>, <circle>, <line>, <rect>, <path>) créées pour le projet
+     et tracés issus de la bibliothèque Open-Source Feather Icons / Lucide Icons (Licence MIT / ISC).
+   - Icônes d'administration Jeedom : Font Awesome Free (inclus nativement dans Jeedom Core — Licences CC BY 4.0 / MIT).
+
+2. Spécifications d'interopérabilité API Locale :
+   - Interopérabilité basée sur la documentation publique de l'API Locale (port TCP 3000, /api/v1/hvac)
+     et sur le composant open-source Home Assistant `airfree` / `aioairfree` (Licence Apache-2.0).
+
+3. Marques citées :
+   - "Airfree" et "Jeedom" sont des marques déposées de leurs propriétaires respectifs, mentionnées uniquement
+     à titre de compatibilité technique et d'interopérabilité (usage référentiel autorisé par le Code de la propriété intellectuelle).
+   - Aucun fichier graphique, feuille de style, police ou code source propriétaire n'est utilisé dans ce projet.
