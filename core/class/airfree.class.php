@@ -431,15 +431,30 @@ class airfree extends eqLogic {
             $panelEq->setEqType_name('airfree');
             $panelEq->setLogicalId('airfree_panel');
             $panelEq->setName('Airfree');
-            if ($defaultObjectId !== null) {
-                $panelEq->setObject_id($defaultObjectId);
-            }
+        }
+        if ($defaultObjectId !== null && !$panelEq->getObject_id()) {
+            $panelEq->setObject_id($defaultObjectId);
         }
         $panelEq->setIsEnable(1);
         $panelEq->setIsVisible(1);
         $panelEq->setCategory('heating', 1);
         $panelEq->setConfiguration('isPanelButton', 1);
         $panelEq->save();
+        if (method_exists($panelEq, 'emptyCacheWidget')) {
+            $panelEq->emptyCacheWidget();
+        }
+
+        // Masquer d'office toutes les tuiles de zones existantes sur le Dashboard
+        foreach (self::byType('airfree') as $existingEq) {
+            if ($existingEq->getLogicalId() !== 'airfree_panel') {
+                $existingEq->setIsVisible(0);
+                $existingEq->setConfiguration('isPanelButton', 0);
+                $existingEq->save();
+                if (method_exists($existingEq, 'emptyCacheWidget')) {
+                    $existingEq->emptyCacheWidget();
+                }
+            }
+        }
 
         // 2. Créer / mettre à jour les équipements de zones (masqués par défaut sur le Dashboard pour éviter d'avoir 10 tuiles)
         foreach ($data['systems'] as $sys) {
