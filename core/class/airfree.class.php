@@ -401,12 +401,47 @@ class airfree extends eqLogic {
 
     /**
      * Synchronise les zones Airfree avec les équipements eqLogic Jeedom
+     * Crée également une tuile unique "Airfree" (bouton d'accès direct au Panel complet)
+     * et masque par défaut les tuiles individuelles de zones sur le Dashboard.
      */
     public static function synchronize() {
         $data = self::fetchAllSystems(null, null, null, true);
         $discoveredSysIds = array();
         $count = 0;
 
+        // Trouver l'objet Jeedom "Airfree" s'il existe, sinon le premier objet racine disponible
+        $defaultObjectId = null;
+        if (class_exists('jeeObject')) {
+            $allObjects = jeeObject::all();
+            foreach ($allObjects as $obj) {
+                if ($defaultObjectId === null) {
+                    $defaultObjectId = $obj->getId();
+                }
+                if (stripos($obj->getName(), 'airfree') !== false) {
+                    $defaultObjectId = $obj->getId();
+                    break;
+                }
+            }
+        }
+
+        // 1. Créer / mettre à jour la tuile unique de raccourci vers le Panel complet Airfree
+        $panelEq = self::byLogicalId('airfree_panel', 'airfree');
+        if (!is_object($panelEq)) {
+            $panelEq = new airfree();
+            $panelEq->setEqType_name('airfree');
+            $panelEq->setLogicalId('airfree_panel');
+            $panelEq->setName('Airfree');
+            if ($defaultObjectId !== null) {
+                $panelEq->setObject_id($defaultObjectId);
+            }
+        }
+        $panelEq->setIsEnable(1);
+        $panelEq->setIsVisible(1);
+        $panelEq->setCategory('heating', 1);
+        $panelEq->setConfiguration('isPanelButton', 1);
+        $panelEq->save();
+
+        // 2. Créer / mettre à jour les équipements de zones (masqués par défaut sur le Dashboard pour éviter d'avoir 10 tuiles)
         foreach ($data['systems'] as $sys) {
             $discoveredSysIds[] = $sys['systemID'];
             foreach ($sys['zones'] as $z) {
@@ -418,9 +453,11 @@ class airfree extends eqLogic {
                     $eqLogic->setLogicalId($logicalId);
                     $eqLogic->setName($sys['groupName'] . ' - ' . $z['name']);
                     $eqLogic->setIsEnable(1);
-                    $eqLogic->setIsVisible($z['available'] ? 1 : 0);
                     $eqLogic->setCategory('heating', 1);
                 }
+                // Masquer les zones individuelles du Dashboard pour ne laisser que le bouton d'accès au Panel
+                $eqLogic->setIsVisible(0);
+                $eqLogic->setConfiguration('isPanelButton', 0);
                 $eqLogic->setConfiguration('systemID', $z['systemID']);
                 $eqLogic->setConfiguration('zoneID', $z['zoneID']);
                 $eqLogic->setConfiguration('groupName', $sys['groupName']);
@@ -557,6 +594,29 @@ class airfree extends eqLogic {
             return $replace;
         }
         $version = jeedom::versionAlias($_version);
+
+        // Cas 1 : Tuile unique de raccourci "Airfree" qui ouvre directement le Panel complet
+        if ($this->getLogicalId() === 'airfree_panel' || intval($this->getConfiguration('isPanelButton', 0)) === 1) {
+            $panelUrl = ($version === 'mobile') ? 'index.php?v=m&m=airfree&p=airfree' : 'index.php?v=d&m=airfree&p=panel';
+            $uid = $replace['#uid#'];
+            $id  = $replace['#id#'];
+            $html = '<div class="eqLogic eqLogic-widget allowResize airfree-launcher-card" data-eqType="airfree" data-eqLogic_id="' . $id . '" data-eqLogic_uid="' . $uid . '" data-version="' . $version . '" '
+                  . 'onclick="window.location.href=\'' . $panelUrl . '\'" '
+                  . 'style="width: 220px; height: 110px; border-radius: 16px !important; padding: 14px 16px !important; background: linear-gradient(135deg, #064838 0%, #0c5e49 100%) !important; color: #ffffff !important; cursor: pointer; position: relative; overflow: hidden; box-sizing: border-box; box-shadow: 0 4px 12px rgba(6,72,56,0.28);">'
+                  . '<div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2;">'
+                  . '  <span style="font-size:16px !important;font-weight:800 !important;color:#ffffff !important;letter-spacing:-0.3px;">Airfree</span>'
+                  . '  <span style="background:rgba(255,255,255,0.18) !important;color:#ffffff !important;padding:3px 8px;border-radius:999px;font-size:11px !important;font-weight:700 !important;">API Locale</span>'
+                  . '</div>'
+                  . '<div style="margin-top:6px;font-size:12px !important;color:rgba(255,255,255,0.85) !important;position:relative;z-index:2;">Respirez ! C\'est Open-Source !</div>'
+                  . '<div style="position:absolute;bottom:12px;left:16px;right:16px;z-index:2;">'
+                  . '  <a href="' . $panelUrl . '" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:7px 12px;border-radius:10px;background:#ffffff !important;color:#064838 !important;font-size:12.5px !important;font-weight:800 !important;text-decoration:none !important;box-shadow:0 2px 6px rgba(0,0,0,0.15);">'
+                  . '    <span>Ouvrir le panneau CVC</span>'
+                  . '    <span style="color:#064838 !important;">→</span>'
+                  . '  </a>'
+                  . '</div>'
+                  . '</div>';
+            return $this->postToHtml($_version, $html);
+        }
 
         $onCmd       = $this->getCmd('info', 'on');
         $roomTempCmd = $this->getCmd('info', 'roomTemp');
